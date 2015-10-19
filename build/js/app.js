@@ -9211,23 +9211,145 @@ return jQuery;
 }));
 
 },{}],2:[function(require,module,exports){
-var page_scroll_top = require('./pageScrollTop');
-
-page_scroll_top();
-
-},{"./pageScrollTop":3}],3:[function(require,module,exports){
-
-module.exports = function(){
+module.exports = (function(){
 
 	var $ = require("jquery");
 	
-	$('a[href^=#]').click(function(){
-		var speed = 500;
-		var href= $(this).attr("href");
-		var target = $(href == "#" || href == "" ? 'html' : href);
-		var position = target.offset().top;
-		$("html, body").animate({scrollTop:position}, speed, "swing");
-		return false;
-	});
-};
-},{"jquery":1}]},{},[2]);
+	function Helper(){
+	}
+
+	Helper.getScrollY = function(){
+		var scroll_y = $(window).scrollTop();
+		return scroll_y;
+	};
+
+	Helper.getWindowHeight = function(){
+		var window_height = $(window).innerHeight();
+		return window_height;
+	};
+
+
+	return Helper;
+})();
+},{"jquery":1}],3:[function(require,module,exports){
+module.exports = (function(){
+
+	var $ = require("jquery");
+
+	var Helper = require('./Helper');
+
+	function PopoverDialog(){
+		this.arg = {
+			button: '.js-popover-button',
+			close_button: '.js-popover-close',
+			targetId: '#popover'
+		};
+		this.page_scrollY = 0;
+		this.base_duration = 300;
+		this.init();
+	}
+
+	PopoverDialog.prototype.init = function(){
+		this.open();
+		this.close();
+		this.render();
+	};
+
+	PopoverDialog.prototype.render = function(){
+		if ($('#popover-bg').length > 0) {
+			return;
+		}
+		$('body').append('<div id="popover-bg"></div>');
+	};
+
+	PopoverDialog.prototype.open = function(){
+		var _this = this;
+		var scroll_y = 0;
+
+
+		$(_this.arg.button).on('click', function(event) {
+			event.preventDefault();
+
+			_this.page_scrollY = Helper.getScrollY();
+
+			_this.showDialog();
+			_this.backgroundLayerControl();
+
+			_this.close();
+		});
+	};
+
+	PopoverDialog.prototype.close = function(){
+		var _this = this;
+
+		$(_this.arg.close_button).on('click', function(event) {
+			event.preventDefault();
+
+			_this.closeDialog();
+			_this.backgroundLayerControl();
+		});
+	};
+
+
+	PopoverDialog.prototype.backgroundLayerControl = function(){
+		var _this = this;
+		var bg_layer = $('#popover-bg');
+
+		bg_layer.css({ 'display': 'block' });
+
+		setTimeout(function() {
+			bg_layer.css({ 'opacity': '1' });
+		}, 1);
+
+		setTimeout(function() {
+			bg_layer.css({ 'opacity': '0' });
+		}, _this.base_duration + 100);
+
+		setTimeout(function() {
+			bg_layer.css({ 'display': 'none' });
+		}, _this.base_duration * 2 + 101);
+	};
+
+	PopoverDialog.prototype.showDialog = function(){
+		var _this = this;
+		var window_height = Helper.getWindowHeight();
+
+
+		$(_this.arg.targetId).show();
+		$(_this.arg.targetId).css('min-height', window_height);
+
+		setTimeout(function() {
+			$(_this.arg.targetId).css('visibility', 'visible');
+		}, _this.base_duration);
+
+		setTimeout(function() {
+			$(window).scrollTop(0);
+			$('#page').css('display', 'none');
+		}, _this.base_duration + 101);
+	};
+
+
+	PopoverDialog.prototype.closeDialog = function(){
+		var _this = this;
+
+		setTimeout(function() {
+			$(_this.arg.targetId).hide();
+			$(_this.arg.targetId).css('visibility', 'hidden');
+		}, _this.base_duration);
+
+		setTimeout(function() {
+			$('#page').css('display', '');
+			$(window).scrollTop(_this.page_scrollY);
+		}, _this.base_duration + 1);
+	};
+
+
+	return PopoverDialog;
+})();
+},{"./Helper":2,"jquery":1}],4:[function(require,module,exports){
+
+var PopoverDialog = require('./PopoverDialog');
+
+var popover_dialog = new PopoverDialog();
+
+},{"./PopoverDialog":3}]},{},[4]);

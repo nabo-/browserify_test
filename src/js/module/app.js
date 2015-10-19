@@ -1,3 +1,4 @@
-var page_scroll_top = require('./pageScrollTop');
 
-page_scroll_top();
+var PopoverDialog = require('./PopoverDialog');
+
+var popover_dialog = new PopoverDialog();

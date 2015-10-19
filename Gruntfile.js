@@ -21,6 +21,7 @@ module.exports = function (grunt) {
 			tmp: 'tmp',
 			html_src: 'src/html',
 			scss_src: 'src/scss',
+			img_src: 'src/img',
 			js_src: 'src/js',
 		},
 
@@ -29,7 +30,7 @@ module.exports = function (grunt) {
 		browserify: {
 			dist: {
 				files: {
-					'build/js/app.js': '<%= path.js_src %>/module/app.js'
+					'<%= path.build %>/js/app.js': '<%= path.js_src %>/module/app.js'
 				},
 			}
 		},
@@ -104,6 +105,25 @@ module.exports = function (grunt) {
 			}
 		},
 
+		uglify: {
+			normal: {
+				files: {
+					'<%= path.build %>/js/all.js' : '<%= path.tmp %>/js/all.js',
+				}
+			}
+		},
+
+		imagemin: {
+			noraml: {
+				files: [{
+					expand: true,
+					cwd: '<%= path.img_src %>',
+					src: ['*.{png,jpg}'],
+					dest: '<%= path.build %>/img/'
+				}]
+			}
+		},
+
 		watch: {
 			css: {
 				files: ['<%= path.scss_src %>/**/*.scss'],
@@ -127,7 +147,8 @@ module.exports = function (grunt) {
 	grunt.registerTask('build:html', ['assemble']);
 	grunt.registerTask('build:css', ['sass', 'autoprefixer', 'csso']);
 	grunt.registerTask('build:require', ['browserify']);
-	grunt.registerTask('build', ['build:html', 'build:css', 'build:ts', 'build:require', 'clean']);
+	grunt.registerTask('build', ['build:html', 'build:css', 'build:require', 'build:img', 'clean']);
+	grunt.registerTask('build:img', ['imagemin']);
 
 	grunt.registerTask('live', ['connect', 'watch']);
 	grunt.registerTask('default', 'build');
